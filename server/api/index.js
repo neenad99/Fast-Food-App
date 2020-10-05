@@ -31,7 +31,7 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
     connectionString = process.env.DATABASE_URL;
     ssl = true;
   }
-// postgresql://postgres:<your admin password>@localhost:5432/<your db name>
+  // postgresql://postgres:<your admin password>@localhost:5432/<your db name>
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgres://cfsezloo:oA41pLZTXNtBIR_vxJHO-ZXqwHM0lAzR@tantor.db.elephantsql.com:5432/cfsezloo',
     ssl: process.env.DATABASE_URL ? true : false,
