@@ -3,6 +3,12 @@ import logger from 'morgan';
 import path from 'path';
 import upload from './helpers/upload';
 import AuthC from './controllers/authController';
+import Razorpay from 'razorpay';
+
+let instance = new Razorpay({
+  key_id: 'rzp_test_ej0GPgDR3FzT7m', // your `KEY_ID`
+  key_secret: 'k1BkS0ulAFGzhnCd1v3a6CvO' // your `KEY_SECRET`
+});
 
 export default (orderC, userC, menuC) => {
   const server = express();
@@ -62,6 +68,27 @@ export default (orderC, userC, menuC) => {
     .then(result => res.status(result.statusCode).json(result))
     .catch(err => res.status(err.statusCode || 500).json(err)));
 
+    //payment routes
+
+    server.post(`${prefix}/orders/payment`,AuthC.verifyToken,(req,res)=>{
+      // params=req.body;
+      instance.orders.create(req.body).then((data) => {
+      res.send({"sub":data,"status":"success"});
+      }).catch((error) => {
+      res.send({"sub":error,"status":"failed"});
+      });
+    });
+
+    server.post(`${prefix}/orders/payment/verify`,AuthC.verifyToken,(req,res)=>{
+      var body=req.body.razorpay_order_id + "|" + req.body.razorpay_payment_id;
+      var crypto = require("crypto");
+      var expectedSignature = crypto.createHmac('sha256', 'k1BkS0ulAFGzhnCd1v3a6CvO').update(body.toString()).digest('hex');
+      var response = {"status":"failure"}
+      if(expectedSignature === req.body.razorpay_signature){
+        response={"status":"success"};
+      }
+    res.send(response);
+    });
 
   // ****** USER ROUTES **** //
   // SIGNUP /user

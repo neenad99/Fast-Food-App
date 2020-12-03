@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } = order;
 
             let odrStatus = order.status;
-
+            //create table row for each order
             const orderIdCell = document.createTextNode(`#${userid}FFF${orderid}`);
             const foodCell = document.createTextNode(food);
             const qtyCell = document.createTextNode(quantity);
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = document.createElement('TR');
             tr.className = 'orderRow';
 
-            const tbody = document.getElementById('adminOrdersTableBody');
+            const tbody = document.getElementById('adminOrdersTableBody');//appending row to table UI
             cellArr.forEach((cell) => {
               const td = document.createElement('TD');
               td.appendChild(cell);

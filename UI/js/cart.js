@@ -58,7 +58,7 @@ setTimeout(() => {
   const cartBtns = document.getElementsByClassName('cartBtn');
   // Listen for a click event on each 'Add to Cart' button and append order info to shopping cart
   [...cartBtns].forEach((cartBtn) => {
-    cartBtn.addEventListener('click', () => {
+    cartBtn.addEventListener('click', (e) => {
       if (!document.getElementById('menuWelcome').textContent.includes('Welcome ')) {
       // open modal asking user to sign up
         msg.innerHTML = ('Please <a href="/signup"><b>signup</b></a> or <a href="/login"><b>login</b></a> to continue with your order');
@@ -67,13 +67,12 @@ setTimeout(() => {
       }
       const btnID = cartBtn.id;
       const uniqueId = btnID.slice(3);
-
       const name = document.getElementById(`item${uniqueId}`).innerHTML;
       const img = document.getElementById(`img${uniqueId}`);
       let quantity = Number(document.querySelector(`select#selectQty${uniqueId}`).value);
       let price = document.getElementById(`price${uniqueId}`).innerHTML;
-      price = quantity * Number(price.slice(4));
-
+      price = quantity * Number(price.slice(2,price.indexOf(".")));
+      console.log(price);
       totalQty += quantity;
       totalItems.innerHTML = totalQty;
       localStorage.setItem('cartCount', `${totalQty}`);
@@ -233,7 +232,7 @@ cart.onclick = () => {
 const orderHistory = document.getElementById('tableHistory');
 
 // CHECKOUT BUTTON
-checkoutBtn.onclick = () => {
+checkoutBtn.addEventListener('click',(e) => {
   if (!address.value || address.value === 'null') {
     cartErr.innerHTML = 'Please fill in your delivery address';
     return;
@@ -251,83 +250,152 @@ checkoutBtn.onclick = () => {
     if (!cartArray) {
       cartArray = JSON.parse(localStorage.cartArray);
     }
-
-    const req = new Request(`${localhost}/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-access-token': localStorage.token,
+    var params = {
+      amount: totalPrice*100,  
+      currency: "INR",
+      receipt: "su001",
+      payment_capture: '1'
+    };
+    const req1 = new Request(`${localhost}/orders/payment`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-access-token':localStorage.getItem('token'),
       },
-      body: JSON.stringify({ cartArray, address: address.value, phone: phone.value }),
+      body:JSON.stringify(params)
     });
-    fetch(req).then((resp) => {
-      resp.json().then((res) => {
-        if (res.error) {
-          msg.innerHTML = `<p style="color: red">Error: ${res.error.message || res.error}</p>`;
-          displayModal(generalModal, span1);
-        } else if (res.status === 'fail') {
 
-          cartErr.innerHTML = `<p>${res.message}</p>`;
-        } else if (res.status === 'success') {
-          let i = 0;
-          const { orderid, userid, food } = res.order;
-          msg.innerHTML = `<span style="color: green"><b>${res.message}!</b></span>
-          <h4 style="text-decoration: underline"> YOUR ORDER DETAILS: </h4>
-          <p><span style="color: blue">Order ID</span>: <b>#${userid}FFF${orderid}</b></p>`;
-
-          food.forEach((item) => {
-            const { name, quantity } = item;
-            i += 1;
-            const p = document.createElement('P');
-            p.innerHTML = `<span style="color: blue">Food${i}</span>: <b>${quantity}x ${name}</b>`;
-            msg.appendChild(p);
-          });
-
-          const div = document.createElement('DIV');
-          div.innerHTML = `  
-          <p><span style="color: blue">Total Quantity</span>: <b>${res.order.quantity}</b></p>
-          <p><span style="color: blue">Price</span>: <b>&#x20a6; ${res.order.price}.00</b></p>
-          <br>We will contact you shortly at <b>${phone.value}</b> or <b>${localStorage.email}</b> with further details.
-          <h6 style="color: red"><i>Please note your Order ID for any correspondence related to this order.</i></h6>`;
-
-          msg.appendChild(div);
-          displayModal(generalModal, span1);
-
-          totalPrice = 0;
-          total.innerHTML = totalPrice.toFixed(2);
-          // Remove rows from cart table
-          trArr.forEach(((tr) => {
-            cartTable.removeChild(tr); // remove row from table
-          }));
-          // Clear trArr
-          trArr = [];
-
-          // Record order in order history table
-          cartCellArr.forEach((cells) => {
-            // Add date as first element in cell
-            const date = document.createTextNode(`${new Date()}`);
-            cells.unshift(date);
-            cells.pop();
-            const trHist = document.createElement('TR');
-            appendtoTable(cells, trHist, orderHistory);
-          });
-          // Reset data
-          cartCellArr = [];
-          orders = [];
-          cartArray.length = 0;
-          totalQty = 0;
-          totalItems.innerHTML = 0;
-          localStorage.removeItem(orders);
-          localStorage.removeItem(cartArray);
-          // Style button
-          checkoutBtn.style.backgroundColor = '#212121';
-          checkoutBtn.style.cursor = 'not-allowed';
-          checkoutBtn.style.color = 'goldenrod';
-          checkoutBtn.style.opacity = 0.6;
+    fetch(req1).then((res)=>{
+      res.json().then((resp)=>{
+        if(resp.status=='failed'){
+          console.log('failed to create orderid');
         }
-      }).catch((err) => {
-        console.error('err in placing order:', err);
-      });
-    }).catch(fetchErr => console.error('fetcherr:', fetchErr));
+        else{
+          var options = {
+            "key": "rzp_test_ej0GPgDR3FzT7m",  //Enter your razorpay key
+            "currency": "INR",
+            "name": "Fast Food App",
+            "description": "Thank You for using our app",
+            "image": "https://previews.123rf.com/images/subhanbaghirov/subhanbaghirov1605/subhanbaghirov160500087/56875269-vector-light-bulb-icon-with-concept-of-idea-brainstorming-idea-illustration-.jpg",
+            "order_id": resp.sub.id,
+            "handler": function (response){
+                var params = {
+                  razorpay_order_id:  response.razorpay_order_id,  
+                  razorpay_payment_id:  response.razorpay_payment_id,
+                  razorpay_signature:  response.razorpay_signature,
+                };
+                const req2 = new Request(`${localhost}/orders/payment/verify`,{
+                  method:'POST',
+                  headers:{
+                    'Content-Type':'application/json',
+                    'x-access-token':localStorage.getItem('token'),
+                  },
+                  body:JSON.stringify(params)
+                });
+                fetch(req2).then((resp)=>{
+                  resp.json().then((res)=>{
+                    if(res.status==='success'){
+                      saveAndDisplayOrder(response.razorpay_payment_id);
+                    }
+                    else{
+                      console.log("Verification failed");
+                    }
+                  }).catch((err)=>{console.log(err.message)});
+                }).catch((err)=>{console.log(err.message)});
+               
+            },
+            "theme": {
+                "color": "#528FF0"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+        e.preventDefault();
+        }
+      }).catch(()=>{console.log('error in creating order id')});
+    }).catch((err)=>{console.log(err)});
   }
-};
+});
+
+
+function saveAndDisplayOrder(order_payment_id){
+  const req = new Request(`${localhost}/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-access-token': localStorage.token,
+    },
+    body: JSON.stringify({ cartArray, address: address.value, phone: phone.value }),
+  });
+  fetch(req).then((resp) => {
+    resp.json().then((res) => {
+      if (res.error) {
+        msg.innerHTML = `<p style="color: red">Error: ${res.error.message || res.error}</p>`;
+        displayModal(generalModal, span1);
+      } else if (res.status === 'fail') {
+
+        cartErr.innerHTML = `<p>${res.message}</p>`;
+      } else if (res.status === 'success') {
+        let i = 0;
+        const { orderid, userid, food } = res.order;
+        msg.innerHTML = `<span style="color: green"><b>${res.message}!</b></span>
+        <h4 style="text-decoration: underline"> YOUR ORDER DETAILS: </h4>
+        <p><span style="color: blue">Order ID</span>: <b>#${userid}FFF${orderid}</b></p>
+        <p><span style="color:blue">Payment ID</span>: <b>${order_payment_id}</b></p>
+        `;
+
+        food.forEach((item) => {
+          const { name, quantity } = item;
+          i += 1;
+          const p = document.createElement('P');
+          p.innerHTML = `<span style="color: blue">Food${i}</span>: <b>${quantity}x ${name}</b>`;
+          msg.appendChild(p);
+        });
+
+        const div = document.createElement('DIV');
+        div.innerHTML = `  
+        <p><span style="color: blue">Total Quantity</span>: <b>${res.order.quantity}</b></p>
+        <p><span style="color: blue">Price</span>: <b>&#x20a6; ${res.order.price}.00</b></p>
+        <br>We will contact you shortly at <b>${phone.value}</b> or <b>${localStorage.email}</b> with further details.
+        <h6 style="color: red"><i>Please note your Order ID for any correspondence related to this order.</i></h6>`;
+
+        msg.appendChild(div);
+        displayModal(generalModal, span1);
+
+        totalPrice = 0;
+        total.innerHTML = totalPrice.toFixed(2);
+        // Remove rows from cart table
+        trArr.forEach(((tr) => {
+          cartTable.removeChild(tr); // remove row from table
+        }));
+        // Clear trArr
+        trArr = [];
+
+        // Record order in order history table
+        cartCellArr.forEach((cells) => {
+          // Add date as first element in cell
+          const date = document.createTextNode(`${new Date()}`);
+          cells.unshift(date);
+          cells.pop();
+          const trHist = document.createElement('TR');
+          appendtoTable(cells, trHist, orderHistory);
+        });
+        // Reset data
+        cartCellArr = [];
+        orders = [];
+        cartArray.length = 0;
+        totalQty = 0;
+        totalItems.innerHTML = 0;
+        localStorage.removeItem(orders);
+        localStorage.removeItem(cartArray);
+        // Style button
+        checkoutBtn.style.backgroundColor = '#212121';
+        checkoutBtn.style.cursor = 'not-allowed';
+        checkoutBtn.style.color = 'goldenrod';
+        checkoutBtn.style.opacity = 0.6;
+      }
+    }).catch((err) => {
+      console.error('err in placing order:', err);
+    });
+  }).catch(fetchErr => console.error('fetcherr:', fetchErr));
+}

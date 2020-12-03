@@ -33,12 +33,13 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
   }
   // postgresql://postgres:<your admin password>@localhost:5432/<your db name>
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgres://cfsezloo:oA41pLZTXNtBIR_vxJHO-ZXqwHM0lAzR@tantor.db.elephantsql.com:5432/cfsezloo',
+    connectionString: process.env.DB_URL_LOCAL||process.env.DATABASE_URL || 'postgres://cfsezloo:oA41pLZTXNtBIR_vxJHO-ZXqwHM0lAzR@tantor.db.elephantsql.com:5432/cfsezloo',
     ssl: process.env.DATABASE_URL ? true : false,
   });
   pool.on('connect', () => {
+    console.log('db connected');
   });
-
+  
   const db = new DB(pool);
   // db.dropTable('menu');
   // db.dropTable('orders');
@@ -78,3 +79,4 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
 const app = server(orderC, userC, menuC);
 const port = process.env.PORT || 9999;
 app.listen(port, () => console.log('listening at port', port));
+
