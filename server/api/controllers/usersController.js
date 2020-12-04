@@ -87,6 +87,7 @@ export default class {
         }
         return { status: 'fail', statusCode: 409, message };
       }
+      console.log('db error');
       return { status: 'fail', statusCode: 500, error: error.message };
     }
   }
