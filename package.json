@@ -2,7 +2,7 @@
   "name": "fast-food-fast",
   "version": "1.0.0",
   "engines": {
-    "node": "14.9.0"
+    "node": "14.x"
   },
   "description": "A food delivery service app for a restaurant | Andela Developer Challenge",
   "main": "./server/api/index.js",
