@@ -34,7 +34,7 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
   // postgresql://postgres:<your admin password>@localhost:5432/<your db name>
   const pool = new Pool({
     connectionString: 'postgres://cfsezloo:oA41pLZTXNtBIR_vxJHO-ZXqwHM0lAzR@tantor.db.elephantsql.com:5432/cfsezloo',
-    ssl: process.env.DATABASE_URL ? true : false,
+    ssl: true
   });
   pool.on('connect', () => {
     console.log('db connected');
