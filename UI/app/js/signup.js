@@ -56,7 +56,7 @@ signupBtn.onmouseover = () => {
   }
 };
 
-const localhost = 'http://localhost:9999/api/v1';
+const localhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
 // UNCOMMENT BELOW AND USE IN REQ FOR PRODUCTION
 // const herokuhost = 'https://fast-food-fast-bobsar0.herokuapp.com/api/v1/';
 
