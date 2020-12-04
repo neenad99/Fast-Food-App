@@ -41,12 +41,12 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
   });
   
   const db = new DB(pool);
-  // db.dropTable('menu');
-  // db.dropTable('orders');
-  // db.dropTable('users');
-  // db.createUsersTable();
-  // db.createOrdersTable();
-  // db.createMenuTable();
+  db.dropTable('menu');
+  db.dropTable('orders');
+  db.dropTable('users');
+  db.createUsersTable();
+  db.createOrdersTable();
+  db.createMenuTable();
 
   const auth = new Auth();
   const userM = new User();
