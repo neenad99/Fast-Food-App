@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 const local = 'https://iskcon-fast-food.herokuapp.com/api/v1';
+// const local='http://localhost:9999/api/v1';
 // UNCOMMENT BELOW AND USE IN REQ FOR PRODUCTION
 // const heroku = 'https://fast-food-fast-bobsar0.herokuapp.com/api/v1/';
 

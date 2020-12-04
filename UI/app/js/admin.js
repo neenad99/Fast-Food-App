@@ -63,8 +63,9 @@ search.onkeyup = () => {
   });
 };
 
-// const host = 'http://localhost:9999/api/v1';
+
 const host = 'https://iskcon-fast-food.herokuapp.com/api/v1';
+// const host='http://localhost:9999/api/v1';
 // UNCOMMENT BELOW AND USE IN REQ IN PRODUCTION
 // const herokuhost = 'https://fast-food-fast-bobsar0.herokuapp.com/api/v1/';
 
