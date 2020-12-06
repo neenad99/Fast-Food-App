@@ -2,6 +2,10 @@
 /* eslint-disable object-curly-newline */
 /* eslint-disable no-param-reassign */
 import dotenv from 'dotenv';
+const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
+const Mailgen = require('mailgen');
+const OAuth2 = google.auth.OAuth2;
 // import emailService from '../helpers/email';
 // import smsClient from '../helpers/sms';
 
@@ -266,8 +270,9 @@ export default class OrderDBController {
       req.params.orderId,
     ];
     try {
-      // const { email, food, quantity, price, address, phone, userid, orderid, username } = rows[0];
+      const { email, food, quantity, price, address, phone, userid, orderid, username } = rows[0];
       const response = await this.db.query(updateStatusQuery, values);
+      sendMail(email,food,quantity,username,price,status);
       // const id = `#${userid}FFF${orderid}`;
       // // SEND EMAIL
       // let msg = '';
@@ -289,7 +294,7 @@ export default class OrderDBController {
       //   html: `<h1 style="font-size: 60px;  text-align: center;"><a href="https://fast-food-fast-bobsar0.herokuapp.com" style="color: goldenrod; text-decoration: none;">Fast<span style="color: #212121">-Food-</span>Fast!</a></h1>
       //   Dear ${username}, <br><p>The status of your order ${id} has been updated to <b>${status}</b>.</p>
       //   <p>Order details:</p>
-      //   <ul><li>Food: <b>${food}</b></li><li>Quantity: <b>${quantity}</b></li><li>Price: <b>NGN${price}.00</b></li></ul>
+      //   <ul><li>Food: <b>${food}</b></li><li>Quantity: <b>${quantity}</b></li><li>Price: <b>Rs {price}.00</b></li></ul>
       //   ${msg}
       //   <p>Thank you.</p>
       //   <p>Kind regards,<p>
@@ -303,7 +308,7 @@ export default class OrderDBController {
       //   }
       // });
 
-      // SEND SMS
+      
       // smsClient.messages
       //   .create({
       //     body: body.toUpperCase(),
@@ -345,4 +350,113 @@ export default class OrderDBController {
       return { status: 'fail', statusCode: 400, message: error.message };
     }
   }
+}
+
+function sendMail(email,food,quantity,username,price,status){
+  const oauth2Client = new OAuth2(
+    "695165201304-k8iis30rdmcktkigklrfet4vc6nfgdrj.apps.googleusercontent.com", // ClientID
+    "UeoHK66WD6jY2UnwD_V7_ONX", // Client Secret
+    "https://developers.google.com/oauthplayground" // Redirect URL
+);
+
+oauth2Client.setCredentials({
+    refresh_token: "1//04x6EpWxwvk68CgYIARAAGAQSNwF-L9Irqg3YqVmhb1wz5765PTqizHAlbFpaZAMId-3G5GbjwWuOCifjLSxR0I6HqfuMm424jvI"
+});
+const accessToken = oauth2Client.getAccessToken();
+
+const smtpTransport = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+         type: "OAuth2",
+         user: "neenadkambli@gmail.com", 
+         clientId: "695165201304-k8iis30rdmcktkigklrfet4vc6nfgdrj.apps.googleusercontent.com",
+         clientSecret: "UeoHK66WD6jY2UnwD_V7_ONX",
+         refreshToken: "1//04pp1Z_LjFlCWCgYIARAAGAQSNwF-L9IrRCF4Y8Oub9j_7WNDPSPCpTNUmc7rzzW5I_-3Y_QKT0vVVNHJ9vcM-OgLWQTjM_u2L1s",
+         accessToken: accessToken
+    },
+    tls: {
+        rejectUnauthorized: false
+      }
+});
+
+let MailGenerator = new Mailgen({
+    theme:"Salted",
+    product:{
+        name:"Fast Food App",
+        link:'https://iskcon-fast-food.herokuapp.com/api/v1',
+    },
+});
+
+
+
+if(status==="PROCESSING"){
+  var newbody={
+    name:"Neenad Kambli",
+    intro: `Thank you for ordering from our restaurant Your current Order is being Processed
+    `,
+    table:{
+      data:[
+        {
+          OrderItems:food,
+          Quantity:quantity,
+          Price:price
+        }
+      ]
+    },
+    outro:"For further details and assistance contact +234 8146509343 or bobsarglobal@gmail.com"
+  }
+}
+else if(status==="COMPLETE"){
+  var newbody={
+    name:username,
+    intro: `Your order from our restaurant has been dispatched and will reach you shortly
+    `,
+    table:{
+      data:[
+        {
+          OrderItems:food,
+          Quantity:quantity,
+          Price:price
+        }
+      ]
+    },
+    outro:"For further details and assistance contact +234 8146509343 or bobsarglobal@gmail.com"
+  }
+}
+else{
+  var newbody={
+    name:username,
+    intro: `Sorry for the trouble Your Current Order Cant be processed due to some difficulty
+    `,
+    table:{
+      data:[
+        {
+          OrderItems:food,
+          Quantity:quantity,
+          Price:price
+        }
+      ]
+    },
+    outro:"For further details and assistance contact +234 8146509343 or bobsarglobal@gmail.com"
+  }
+}
+
+let response = {
+    body:newbody,
+  };
+
+  let mail = MailGenerator.generate(response);
+
+const mailOptions = {
+    from: "neenadkambli@gmail.com",
+    to: "neenadkambli@gmail.com",
+    subject: "Your Order From Fast Food App",
+    generateTextFromHTML: true,
+    html: mail
+};
+
+smtpTransport.sendMail(mailOptions).then(()=>{
+    console.log("mail sent");
+}).catch((err)=>{console.log(err.message)});
+
 }

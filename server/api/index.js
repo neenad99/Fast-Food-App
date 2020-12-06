@@ -28,13 +28,13 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
     connectionString = process.env.DB_URL_LOCAL;
   } else {
     // For Heroku
-    connectionString = process.env.DATABASE_URL;
+    connectionString = 'postgres://cfsezloo:oA41pLZTXNtBIR_vxJHO-ZXqwHM0lAzR@tantor.db.elephantsql.com:5432/cfsezloo';
     ssl = true;
   }
   // postgresql://postgres:<your admin password>@localhost:5432/<your db name>
   const pool = new Pool({
-    connectionString: 'postgres://cfsezloo:oA41pLZTXNtBIR_vxJHO-ZXqwHM0lAzR@tantor.db.elephantsql.com:5432/cfsezloo',
-    ssl:true
+    connectionString,
+    ssl
   });
   pool.on('connect', () => {
     console.log('db connected');

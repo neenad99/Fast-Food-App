@@ -1,8 +1,7 @@
 /* eslint-disable no-param-reassign */
 const menuhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
 // const menuhost='http://localhost:9999/api/v1';
-// UNCOMMENT BELOW AND USE IN REQ IN PRODUCTION
-// const herokuhost = 'https://fast-food-fast-bobsar0.herokuapp.com/api/v1/';
+
 document.addEventListener('DOMContentLoaded', () => {
   const req = new Request(`${menuhost}/menu`, {
     method: 'GET',
@@ -95,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="desc">
                 <h1 id="item${foodid}">${name}</h1>
-                <p class="price" id="price${foodid}">&#x20a6; ${price}.00</p>
+                <p class="price" id="price${foodid}">Rs ${price}.00</p>
                 <p><span class="fa fa-star checked"></span>
                   <span class="fa fa-star checked"></span>
                   <span class="fa fa-star checked"></span>
@@ -111,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <option>5</option>
                   </select>
                 </p>
-                <button class="buyBtn" id="buy${foodid}">Buy Now</button>
                 <button class="cartBtn" id="btn${foodid}">Add to Cart</button>
               </div>
             </div>`;

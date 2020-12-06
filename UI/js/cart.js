@@ -1,4 +1,5 @@
-const localhost = 'http://localhost:9999/api/v1';
+// const localhost = 'http://localhost:9999/api/v1';
+const localhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
 // UNCOMMENT BELOW AND USE IN REQ FOR PRODUCTION
 // const herokuhost = 'https://fast-food-fast-bobsar0.herokuapp.com/api/v1/';
 
@@ -55,7 +56,7 @@ let totalQty = 0;
 
 
 setTimeout(() => {
-  const cartBtns = document.getElementsByClassName('cartBtn');
+  const cartBtns = document.getElementsByClassName ('cartBtn');
   // Listen for a click event on each 'Add to Cart' button and append order info to shopping cart
   [...cartBtns].forEach((cartBtn) => {
     cartBtn.addEventListener('click', (e) => {
@@ -72,7 +73,6 @@ setTimeout(() => {
       let quantity = Number(document.querySelector(`select#selectQty${uniqueId}`).value);
       let price = document.getElementById(`price${uniqueId}`).innerHTML;
       price = quantity * Number(price.slice(2,price.indexOf(".")));
-      console.log(price);
       totalQty += quantity;
       totalItems.innerHTML = totalQty;
       localStorage.setItem('cartCount', `${totalQty}`);
@@ -151,7 +151,7 @@ setTimeout(() => {
       localStorage.setItem('cart', JSON.stringify(cartCellArr));
 
       // *** If cancel btn is clicked *** //
-      cancelBtn.onclick = () => {
+      cancelBtn.onclick = () => { 
         cartErr.innerHTML = '';
         totalQty -= quantity;
         totalItems.innerHTML = totalQty;
@@ -198,7 +198,7 @@ setTimeout(() => {
       };
     });
   });
-}, 1000);
+}, 3000);
 
 //* **********MODAL**********/
 const modal = document.getElementById('modalDiv'); // Get the modal
@@ -208,7 +208,7 @@ const span = document.getElementsByClassName('close')[0]; // Get the <span> elem
 const address = document.getElementById('userAddr');
 const phone = document.getElementById('userPhone');
 // Open the modal when the user clicks on the cart,
-cart.onclick = () => {
+cart.addEventListener("click", () => {
   if (localStorage.getItem('address')) {
     address.value = localStorage.getItem('address');
   }
@@ -226,7 +226,7 @@ cart.onclick = () => {
   checkoutBtn.style.opacity = condition ? 0.6 : 1;
 
   displayModal(modal, span);
-};
+});
 
 // Order History
 const orderHistory = document.getElementById('tableHistory');
