@@ -380,7 +380,7 @@ const smtpTransport = nodemailer.createTransport({
 });
 
 let MailGenerator = new Mailgen({
-    theme:"Salted",
+    theme:"salted",
     product:{
         name:"Fast Food App",
         link:'https://iskcon-fast-food.herokuapp.com/api/v1',
