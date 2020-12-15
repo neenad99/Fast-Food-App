@@ -71,6 +71,7 @@ loginBtn.onclick = () => {
       password2Err.innerHTML = err.message;
     }))
       .catch(((fetchErr) => {
+        console.log('check net');
         usernameErr.innerHTML = fetchErr;
       }));
   }
