@@ -1,5 +1,6 @@
 // CONSUME LOGIN ENDPOINT
 const loginBtn = document.getElementById('loginBtn');
+const googleBtn = document.getElementById('oauthgoogle');
 const userField = document.getElementById('usernameEmail');
 const passwordField = document.getElementById('password');
 
@@ -7,6 +8,7 @@ const usernameErr = document.querySelector('div#usernameErr');
 const emailErr = document.querySelector('div#emailErr');
 const passwordErr = document.querySelector('div#passwordErr');
 const password2Err = document.querySelector('div#password2Err');
+
 
 loginBtn.onmouseover = () => {
   if (!userField.value || !passwordField.value || emailErr.innerHTML !== '' || passwordErr.innerHTML !== '' || password2Err.innerHTML !== '') {

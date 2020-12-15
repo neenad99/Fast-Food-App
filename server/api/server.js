@@ -4,6 +4,11 @@ import path from 'path';
 import upload from './helpers/upload';
 import AuthC from './controllers/authController';
 import Razorpay from 'razorpay';
+const passport = require('passport');
+const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken')
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 let instance = new Razorpay({
   key_id: 'rzp_test_ej0GPgDR3FzT7m', // your `KEY_ID`
@@ -18,6 +23,43 @@ export default (orderC, userC, menuC) => {
   server.use(logger('dev'));
   server.use(express.json());
   server.use(express.urlencoded({ extended: true }));
+  server.use(passport.initialize());
+
+
+  passport.use(new GoogleStrategy({
+    clientID: "1054839305688-3h4bmtp6ol2if85nai1h8mnsnrq15667.apps.googleusercontent.com",
+    clientSecret: "0i07-QJid8GOoo7g5UE82z9n",
+    callbackURL: "http://localhost:9999/googleRedirect"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+      //console.log(accessToken, refreshToken, profile)
+      console.log("GOOGLE BASED OAUTH VALIDATION GETTING CALLED")
+      return cb(null, profile)
+  }
+));
+
+passport.use(new FacebookStrategy({
+    clientID: '1099475083838348',//process.env['FACEBOOK_CLIENT_ID'],
+    clientSecret: '35aaa85edf95d246c1f5ee537d5a089e',//process.env['FACEBOOK_CLIENT_SECRET'],
+    callbackURL: "http://localhost:9999/facebookRedirect", // relative or absolute path
+    profileFields: ['id', 'displayName', 'email', 'picture']
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    console.log(profile);
+    console.log("FACEBOOK BASED OAUTH VALIDATION GETTING CALLED")
+    return cb(null, profile);
+  }));
+
+passport.serializeUser(function(user, cb) {
+    console.log('serialized user');
+    cb(null, user);
+});
+  
+  passport.deserializeUser(function(obj, cb) {
+    console.log('deserialized user');
+    cb(null, obj);
+});
+
 
   // GET /orders
   server.get(`${prefix}/orders`, AuthC.verifyAdminToken, (_req, res) => {
@@ -91,7 +133,51 @@ export default (orderC, userC, menuC) => {
     });
 
   // ****** USER ROUTES **** //
-  // SIGNUP /user
+  // passport oauth routes
+
+  server.get('/auth/google',  passport.authenticate('google', { scope: ['profile','email'] }));
+  server.get('/auth/facebook',  passport.authenticate('facebook', {scope:'email'}));
+
+  server.get('/googleRedirect', passport.authenticate('google'),(req, res)=>{
+    console.log('redirected', req.user)
+    let user = {
+        id: req.user.id,
+        username: req.user.name.givenName,
+        email: req.user._json.email,
+        provider: req.user.provider,
+       displayName:req.user.displayName};
+    console.log(user);
+
+    userC.createOrFind(user).then((info)=>{
+         res.cookie('userid',info.id);
+         res.cookie('name',user.displayName);
+         res.cookie('email',user.email);
+         res.cookie('username',user.username);
+         res.cookie('jwt',info.token);
+         res.sendFile(`${uiPath}/templates/userMenu.html`);
+    }).catch((err)=>{console.log('failed to create token')});
+});
+server.get('/facebookRedirect', passport.authenticate('facebook', {scope: 'email'}),(req, res)=>{
+    console.log('redirected', req.user)
+    let user = {
+        id:req.user.id,
+        name: req.user._json.name,
+        email: req.user._json.email,
+        provider: req.user.provider };
+    var temp = user.name;
+    temp = temp.substring(0,temp.indexOf(' '));
+    user.name = temp;
+    userC.createOrFind(user).then((info)=>{
+      res.cookie('userid',info.id);
+      res.cookie('name',user.name);
+      res.cookie('email',user.email);
+      res.cookie('username',user.name);
+      res.cookie('jwt',info.token);
+      res.sendFile(`${uiPath}/templates/userMenu.html`);
+ }).catch((err)=>{console.log('failed to create token')});
+});
+
+// sign up routes
   server.post(`${prefix}/auth/signup`, (req, res) => userC.create(req)
     .then(result => res.status(result.statusCode).json(result))
     .catch(err => res.status(err.statusCode || 500)

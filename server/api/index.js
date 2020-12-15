@@ -33,8 +33,7 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
   }
   // postgresql://postgres:<your admin password>@localhost:5432/<your db name>
   const pool = new Pool({
-    connectionString,
-    ssl
+    connectionString
   });
   pool.on('connect', () => {
     console.log('db connected');

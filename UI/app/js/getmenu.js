@@ -3,6 +3,25 @@ const menuhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
 // const menuhost='http://localhost:9999/api/v1';
 
 document.addEventListener('DOMContentLoaded', () => {
+  if(document.cookie){
+    var allcookies = document.cookie;
+    
+    // Get all the cookies pairs in an array
+    cookiearray = allcookies.split(';');
+    
+    // Now take key value pair out of this array
+    var value = [];
+
+    for(let i=0; i<cookiearray.length; i++) {
+      value.push(cookiearray[i].split('=')[1]);
+   }
+   localStorage.setItem('id',value[0]);
+  localStorage.setItem('name',value[1]);
+  localStorage.setItem('email',value[2]);  
+  localStorage.setItem('username',value[3]);    
+  localStorage.setItem('token',value[4]);
+  }
+  // console.log(localStorage.token);
   const req = new Request(`${menuhost}/menu`, {
     method: 'GET',
     headers: {
@@ -223,3 +242,4 @@ document.addEventListener('DOMContentLoaded', () => {
     menuErr.innerHTML = `${fetchErr}... ARE YOU OFFLINE? Please try again in a few minutes`;
   });
 });
+

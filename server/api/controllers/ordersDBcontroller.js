@@ -4,6 +4,7 @@
 import dotenv from 'dotenv';
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
+const moment  = require('moment');
 const Mailgen = require('mailgen');
 const OAuth2 = google.auth.OAuth2;
 // import emailService from '../helpers/email';
@@ -31,7 +32,7 @@ export default class OrderDBController {
       name, quantity, cartArray, address, phone,
     } = req.body;
     let values = [];
-
+    
     // FOR QUICK ORDER OF SINGLE FOOD
     try {
       if (Object.keys(req.body).length === 4 && name && quantity && address && phone) {
@@ -117,23 +118,22 @@ export default class OrderDBController {
       returning *`;
       const { rows } = await this.db.query(insertQuery, values);
       rows[0].food = JSON.parse(rows[0].food);
-      // const { orderid, userid, username, food, price, email } = rows[0];
-
-      // let items = '';
-      // if (typeof food === 'object') {
-      //   food.forEach((item) => {
-      //     let p = '';
-      //     if (food.indexOf(item) + 1 === food.length) {
-      //       p = `<b>${item.quantity}x ${item.name}</b>.`;
-      //     } else {
-      //       p = `<b>${item.quantity}x ${item.name}</b>;`;
-      //     }
-      //     items += p;
-      //   });
-      // } else {
-      //   items = `<b>${food}</b>`;
-      // }
-
+      const { status,quantity,username, food, price, email } = rows[0];
+      let items = '';
+      if (typeof food === 'object') {
+        food.forEach((item) => {
+          let p = '';
+          if (food.indexOf(item) + 1 === food.length) {
+            p = `<b>${item.quantity}x ${item.name}</b>.`;
+          } else {
+            p = `<b>${item.quantity}x ${item.name}</b>;`;
+          }
+          items += p;
+        });
+      } else {
+        items = `<b>${food}</b>`;
+      }
+      sendMail(email,items,quantity,username,price,status);
       // const mailOptions = {
       //   from: emailService.credentials.auth.user,
       //   to: email,
@@ -272,7 +272,22 @@ export default class OrderDBController {
     try {
       const { email, food, quantity, price, address, phone, userid, orderid, username } = rows[0];
       const response = await this.db.query(updateStatusQuery, values);
-      sendMail(email,food,quantity,username,price,status);
+      let items = '';
+      let food1=JSON.parse(food);
+      if (typeof food1 === 'object') {
+        food1.forEach((item) => {
+          let p = '';
+          if (food.indexOf(item) + 1 === food1.length) {
+            p = `<b>${item.quantity}x ${item.name}</b>.`;
+          } else {
+            p = `<b>${item.quantity}x ${item.name}</b>;`;
+          }
+          items += p;
+        });
+      } else {
+        items = `<b>${food1}</b>`;
+      }
+      sendMail(email,items,quantity,username,price,status);
       // const id = `#${userid}FFF${orderid}`;
       // // SEND EMAIL
       // let msg = '';
@@ -388,10 +403,26 @@ let MailGenerator = new Mailgen({
 });
 
 
-
-if(status==="PROCESSING"){
+if(status==='NEW'){
   var newbody={
-    name:"Neenad Kambli",
+    name:username,
+    intro: `Your Order is being placed Wait for few minutes we will confirm your order
+    `,
+    table:{
+      data:[
+        {
+          OrderItems:food,
+          Quantity:quantity,
+          Price:price
+        }
+      ]
+    },
+    outro:"For further details and assistance contact +234 8146509343 or bobsarglobal@gmail.com"
+  }
+}
+else if(status==="PROCESSING"){
+  var newbody={
+    name:username,
     intro: `Thank you for ordering from our restaurant Your current Order is being Processed
     `,
     table:{

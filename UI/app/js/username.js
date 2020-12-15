@@ -22,5 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
 const logout = document.getElementById('logout');
 logout.addEventListener('click', () => {
   localStorage.clear();
+  delete_cookies();
   window.location.href = 'login';
 });
+
+var delete_cookies = function() {
+  var cookies = document.cookie.split(";");
+  var name;
+  for (var i = 0; i < cookies.length; i++) {
+      var cookie = cookies[i];
+      name=cookie.split('=')[0];
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
+};

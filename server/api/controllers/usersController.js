@@ -1,4 +1,7 @@
 /* eslint-disable object-curly-newline */
+
+import { response } from "express";
+
 /**
    * User Controller
    * @param {object} db
@@ -182,4 +185,67 @@ export default class {
       return { status: 'fail', statusCode: 500, message: error.message };
     }
   }
-}
+
+  //for oauth users 
+
+  async createOrFind(user){
+    const text = 'SELECT * FROM users WHERE email = $1 OR username = $1';
+
+    try{
+      const { rows } = await this.db.query(
+        text, [user.email],
+      );
+
+      if(!rows[0]){
+        const createQuery = `INSERT INTO
+        users(username, email, password, phone, address, created_date, modified_date, role)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+        returning *`;
+        user.createdDate = new Date();
+        user.modifiedDate = new Date();
+  const values = [
+    user.username,
+    user.email,
+    user.id,
+    user.phone,
+    user.address,
+    user.createdDate,
+    user.modifiedDate,
+    'user',
+  ];
+  try{
+    const { rows } = await this.db.query(createQuery, values);
+    console.log("user created and inserted");
+    const token = this.auth.generateToken(
+      rows[0].userid, rows[0].username, rows[0].email, rows[0].role,
+    );
+    return {id:rows[0].userid,token:token};
+  }
+  catch(err){
+    console.log(err.message);
+  }
+      }
+      else{
+        console.log("user already exists");
+        console.log(rows[0]);
+        const token = this.auth.generateToken(
+          rows[0].userid, rows[0].username, rows[0].email, rows[0].role,
+        );
+       
+        console.log('in user controller',token);
+        return {id:rows[0].userid,token:token};
+      }
+    }
+    catch(err){
+      console.log(err.message);
+    }
+
+  }
+
+
+
+};
+
+
+
+
