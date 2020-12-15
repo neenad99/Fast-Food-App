@@ -29,7 +29,7 @@ export default (orderC, userC, menuC) => {
   passport.use(new GoogleStrategy({
     clientID: "1054839305688-3h4bmtp6ol2if85nai1h8mnsnrq15667.apps.googleusercontent.com",
     clientSecret: "0i07-QJid8GOoo7g5UE82z9n",
-    callbackURL: "http://localhost:9999/googleRedirect"
+    callbackURL: "https://iskcon-fast-food.herokuapp.com/googleRedirect"
   },
   function(accessToken, refreshToken, profile, cb) {
       //console.log(accessToken, refreshToken, profile)
@@ -38,10 +38,11 @@ export default (orderC, userC, menuC) => {
   }
 ));
 
+
 passport.use(new FacebookStrategy({
     clientID: '1099475083838348',//process.env['FACEBOOK_CLIENT_ID'],
     clientSecret: '35aaa85edf95d246c1f5ee537d5a089e',//process.env['FACEBOOK_CLIENT_SECRET'],
-    callbackURL: "http://localhost:9999/facebookRedirect", // relative or absolute path
+    callbackURL: "https://iskcon-fast-food.herokuapp.com/facebookRedirect", // relative or absolute path
     profileFields: ['id', 'displayName', 'email', 'picture']
   },
   function(accessToken, refreshToken, profile, cb) {
