@@ -480,7 +480,7 @@ let response = {
 
 const mailOptions = {
     from: "neenadkambli@gmail.com",
-    to: "neenadkambli@gmail.com",
+    to:email,
     subject: "Your Order From Fast Food App",
     generateTextFromHTML: true,
     html: mail
