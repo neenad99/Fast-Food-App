@@ -162,17 +162,18 @@ server.get('/facebookRedirect', passport.authenticate('facebook', {scope: 'email
     console.log('redirected', req.user)
     let user = {
         id:req.user.id,
-        username: req.user._json.name,
-        email: req.user._json.email||(req.displayName+"@facebook.com"),
+        username: req.user.displayName,
+        email: req.user._json.email||(req.user.displayName+"@facebook.com"),
         provider: req.user.provider };
     var temp = user.username;
+    console.log(temp);
     temp = temp.substring(0,temp.indexOf(' '));
     user.username = temp;
     userC.createOrFind(user).then((info)=>{
       res.cookie('userid',info.id);
-      res.cookie('name',user.name);
+      res.cookie('name',user.username);
       res.cookie('email',user.email);
-      res.cookie('username',user.name);
+      res.cookie('username',user.username);
       res.cookie('jwt',info.token);
       res.sendFile(`${uiPath}/templates/userMenu.html`);
  }).catch((err)=>{console.log('failed to create token')});
