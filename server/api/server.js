@@ -166,8 +166,9 @@ server.get('/facebookRedirect', passport.authenticate('facebook', {scope: 'email
         email: req.user._json.email||(req.user.displayName+"@facebook.com"),
         provider: req.user.provider };
     var temp = user.username;
-    console.log(temp);
     temp = temp.substring(0,temp.indexOf(' '));
+    console.log(temp);
+    console.log(user.email);
     user.username = temp;
     userC.createOrFind(user).then((info)=>{
       res.cookie('userid',info.id);

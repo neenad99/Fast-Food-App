@@ -189,11 +189,11 @@ export default class {
   //for oauth users 
 
   async createOrFind(user){
-    const text = 'SELECT * FROM users WHERE email = $1 OR username = $1';
+    const text = 'SELECT * FROM users WHERE email = $1 OR username = $2';
 
     try{
       const { rows } = await this.db.query(
-        text, [user.email],
+        text, [user.email,user.username],
       );
 
       if(!rows[0]){
