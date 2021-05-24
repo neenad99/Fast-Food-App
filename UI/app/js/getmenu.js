@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
-const menuhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
-// const menuhost='http://localhost:9999/api/v1';
+// const menuhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
+const menuhost='http://localhost:9999/api/v1';
 
 document.addEventListener('DOMContentLoaded', () => {
   if(document.cookie){

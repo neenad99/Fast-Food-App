@@ -4,12 +4,12 @@ const name = document.getElementById('username');
 const email = document.getElementById('email');
 const password = document.getElementById('password');
 const password2 = document.getElementById('password2');
-
+const phone = document.getElementById('phone');
 const usernameErr = document.querySelector('div#usernameErr');
 const emailErr = document.querySelector('div#emailErr');
 const passwordErr = document.querySelector('div#passwordErr');
 const password2Err = document.querySelector('div#password2Err');
-
+const phoneErr = document.querySelector('div#PhoneErr');
 /**
  * isValidPassword method
  * @param {string} password
@@ -31,6 +31,13 @@ function isValidPassword(value) {
   return 'true';
 }
 
+function isvalidPhoneNo(value){
+  if(!/^[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$/.test(value)){
+    return "Please enter a valid phone no";
+  }
+  return "true";
+}
+
 name.onchange = () => {
   password2Err.innerHTML = '';
 };
@@ -46,6 +53,9 @@ password.onchange = () => {
 password2.oninput = () => {
   password2Err.innerHTML = password2.value === password.value ? '' : 'Passwords don\'t match';
 };
+phone.onchange = () =>{
+  phoneErr.innerHTML = isvalidPhoneNo(phone.value) === "true" ? '': isvalidPhoneNo(phone.value);
+}
 
 signupBtn.onmouseover = () => {
   if (emailErr.innerHTML !== '' || passwordErr.innerHTML !== '' || password2Err.innerHTML !== '') {
@@ -56,8 +66,8 @@ signupBtn.onmouseover = () => {
   }
 };
 
-const localhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
-// const localhost='http://localhost:9999/api/v1';
+// const localhost = 'https://iskcon-fast-food.herokuapp.com/api/v1';
+const localhost='http://localhost:9999/api/v1';
 
 
 
@@ -73,7 +83,7 @@ signupBtn.onclick = () => {
         'Content-Type': 'application/json',
       },
       // mode: 'no-cors',
-      body: JSON.stringify({ username, email: email.value, password: password.value }),
+      body: JSON.stringify({ username, email: email.value, password: password.value,phone: phone.value}),
     });
     fetch(req).then(resp => resp.json().then((res) => {
       if (res.status === 'fail') {

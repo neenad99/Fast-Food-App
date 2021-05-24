@@ -1,5 +1,5 @@
-const host = 'https://iskcon-fast-food.herokuapp.com/api/v1';
-// const host='http://localhost:9999/api/v1';
+// const host = 'https://iskcon-fast-food.herokuapp.com/api/v1';
+const host='http://localhost:9999/api/v1';
 
 
 // when document has loaded

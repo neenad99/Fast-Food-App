@@ -17,6 +17,7 @@ dotenv.config();
 let userC = {};
 let orderC = {};
 let menuC = {};
+let resC = {};
 let connectionString = '';
 let ssl = false;
 
@@ -32,6 +33,7 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
     ssl = true;
   }
   // postgresql://postgres:<your admin password>@localhost:5432/<your db name>
+
   const pool = new Pool({
     connectionString,
     ssl
@@ -47,7 +49,6 @@ if (process.env.CONTROLLER_TYPE !== 'dataStructures') {
   // db.createUsersTable();
   // db.createOrdersTable();
   // db.createMenuTable();
-
   const auth = new Auth();
   const userM = new User();
   userC = new UsersController(db, userM, auth);

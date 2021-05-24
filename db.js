@@ -1,95 +1,194 @@
-const {Pool} = require('pg');
+const { Client,Pool} = require('pg');
 const dotenv = require('dotenv'); 
 
 dotenv.config();
 
 const pool = new Pool({
-    connectionString:process.env.DB_URL_LOCAL|| 'postgres://cfsezloo:oA41pLZTXNtBIR_vxJHO-ZXqwHM0lAzR@tantor.db.elephantsql.com:5432/cfsezloo'
+    connectionString:process.env.DB_URL_LOCAL
 });
+
+// const pool = new Pool({
+//   user:'isckon',
+//   host:'isckon-food-app.cumevpjrfaxh.ap-south-1.rds.amazonaws.com',
+//   database:'isckon-food-app',
+//   password:'kc07aOUY8TdYR5G5Bx20',
+//   port:5432
+// });
 
 pool.on('connect',()=>{
     console.log('db connnected');
-})
+});
 
-module.exports = {
-createUsersTable:()=> {
-    const queryText = `CREATE TABLE IF NOT EXISTS
-        users(
-          userId SERIAL PRIMARY KEY,
-          username VARCHAR(128) UNIQUE NOT NULL,
-          email VARCHAR(128) UNIQUE NOT NULL,
-          password VARCHAR(128) NOT NULL,
-          address TEXT,
-          phone VARCHAR(20) UNIQUE,
-          role VARCHAR(16) default 'user',
-          created_date TIMESTAMP default NOW(),
-          modified_date TIMESTAMP default NOW()
-        )`;
-
-    pool.query(queryText)
+const execute = (table,queryText)=>{
+  pool.query(queryText)
       .then((res) => {
-        console.log('created users table!', res);
+        console.log(`created ${table} table!`, res);
         pool.end();
       })
       .catch((err) => {
-        console.log('err in creating users table', err);
+        console.log(`err in creating ${table} table`, err);
         pool.end();
       });
+}
+
+module.exports = {
+createFoodItemsTable:()=> {
+    const queryText = `CREATE TABLE IF NOT EXISTS
+        menuitem(
+          id VARCHAR(20) PRIMARY KEY,
+          menuid VARCHAR(20) NOT NULL,
+          categoryid VARCHAR(20) NOT NULL,
+          name VARCHAR(128) UNIQUE NOT NULL,
+          description VARCHAR(128) UNIQUE NOT NULL,
+          price DECIMAL NOT NULL,
+          img VARCHAR(128),
+          minQty INTEGER NOT NULL,
+          maxQty INTEGER NOT NULL,
+          availablestarttime TIME NOT NULL,
+          availableendtime TIME NOT NULL,
+          isdisabled BOOLEAN NOT NULL,
+          isekadashiitem BOOLEAN NOT NULL,
+          ingredients VARCHAR(128),
+          created_date TIMESTAMP default NOW(),
+          modified_date TIMESTAMP default NOW(),
+          foreign key(menuid) references menu(id) on delete cascade,
+          foreign key(categoryid) references menuitemcategory(id) on delete cascade
+        )`;
+        execute("menuitem",queryText);
+  },
+  createcategorytable:()=>{
+    const queryText = `CREATE TABLE IF NOT EXISTS
+    menuitemcategory(
+      id VARCHAR(20) PRIMARY KEY,
+      name VARCHAR(20) unique NOT NULL
+    )`;
+    execute("menuitemcategory",queryText);
+  },
+  createmenutable:()=>{
+    const queryText = `
+    create table if not exists
+    menu(
+      id varchar(20) primary key,
+      restaurantid varchar(20) not null,
+      menutypeid varchar(20) not null,
+      starttime time not null,
+      endtime time not null,
+      created_date TIMESTAMP default NOW(),
+      modified_date TIMESTAMP default NOW(),
+      foreign key(restaurantid) references restaurant(id) on delete cascade,
+      foreign key(menutypeid) references menutype(id) on delete cascade 
+    )`;
+
+    execute("menu",queryText);
+  },
+  createrestauranttable:()=>{
+    const queryText=`
+    create table if not exists
+    restaurant(
+      id varchar(20) primary key,
+      typeid varchar(20) not null,
+      name varchar(20) not null,
+      description varchar(128) not null,
+      address varchar(128) unique not null,
+      city varchar(20) not null,
+      state varchar(20) not null,
+      rating integer not null,
+      created_date TIMESTAMP default NOW(),
+      modified_date TIMESTAMP default NOW(),
+      foreign key(typeid) references restauranttype(id) on delete cascade
+    )`;
+    execute("restaurant",queryText);
+  },
+  createmenutypetable:()=>{
+    const queryText=`
+    create table if not exists
+    menutype(
+      id varchar(20) primary key,
+      name varchar(20) unique not null
+    )`;
+
+    execute("menutype",queryText);
+  },
+  createrestauranttypetable:()=>{
+    const queryText=`
+    create table if not exists
+    restauranttype(
+      id varchar(20) primary key,
+      name varchar(20) unique not null
+    )`;
+
+    execute("restauranttype",queryText);
   },
   createOrdersTable:()=> {
     // return new Promise((resolve, reject) => {
       const queryText = `CREATE TABLE IF NOT EXISTS
       orders(
-        orderId SERIAL PRIMARY KEY,
-        userId INTEGER NOT NULL,
-        food VARCHAR(512) NOT NULL,
-        quantity INTEGER,
-        price INTEGER,
-        address TEXT NOT NULL,
-        email TEXT,
-        phone VARCHAR (20),
-        username VARCHAR (128),
-        status VARCHAR(20),
-        reason TEXT,
+        id varchar(20) PRIMARY KEY,
+        userid varchar(20) NOT NULL,
+        restaurantid varchar(20) NOT NULL,
+        statusid varchar(20) not null,
+        quantity INTEGER not null,
+        amount decimal not null,
+        tax decimal not null,
+        deliverycharge decimal not null,
+        discount decimal not null,
+        reason varchar(120),
+        comments varchar(120),
         created_date TIMESTAMP default NOW(),
-        modified_date TIMESTAMP default NOW(),
-        FOREIGN KEY (userId) REFERENCES users (userId) ON DELETE CASCADE
-
+        foreign key (userid) references users(id) on delete cascade,
+        foreign key(restaurantid) references restaurant(id) on delete cascade,
+        foreign key(statusid) references status(id) on delete cascade
       )`;
-      pool.query(queryText)
-        .then((res) => {
-          console.log('created orders table!: ', res);
-          pool.end();
-        })
-        .catch((err) => {
-          console.log(err);
-          pool.end();
-        });
-    // });
+      execute("order",queryText);
   },
-  createMenuTable:()=> {
-    const queryText = `CREATE TABLE IF NOT EXISTS
-      menu(
-        foodId SERIAL PRIMARY KEY,
-        name VARCHAR(128) UNIQUE NOT NULL,
-        price INTEGER NOT NULL,
-        genre VARCHAR(16) NOT NULL,
-        img TEXT,
-        description TEXT,
-        isAvailable BOOLEAN,
-        created_date TIMESTAMP DEFAULT NOW(),
-        modified_date TIMESTAMP DEFAULT NOW()
-      )`;
+  createstatustable:()=>{
+    const queryText=`
+    create table if not exists
+    status(
+      id varchar(20) primary key,
+      name varchar(20) unique not null
+    )`;
 
-    pool.query(queryText)
-      .then(res =>{
-           console.log('created menu table!', res);
-           pool.end();
-        })
-      .catch(err =>{ 
-          console.log('err in creating menu table', err);
-          pool.end();
-    });
+    execute("status",queryText);
+  },
+  createorderitemtable:()=>{
+    const queryText=`
+    create table if not exists
+    orderitem(
+      orderid varchar(20),
+      menuitemid varchar(20),
+      primary key(orderid,menuitemid),
+      foreign key(orderid) references orders(id) on delete cascade,
+      foreign key(menuitemid) references menuitem(id) on delete cascade
+    )`;
+
+    execute("orderitem",queryText);
+  },
+  createusertable:()=> {
+    const queryText=`
+    create table if not exists
+    users(
+      id varchar(20) primary key,
+      roleid varchar(20) not null,
+      username varchar(20) not null,
+      email varchar(20)  not null unique,
+      password varchar(20) not null,
+      phoneno varchar(20)  not null unique,
+      address varchar(120) not null,
+      foreign key(roleid) references role(id) on delete cascade
+    )`;
+
+    execute("users",queryText);
+  },
+  createroletable:()=>{
+    const queryText=`
+    create table if not exists
+    role(
+      id varchar(20) primary key,
+      name varchar(20) not null unique
+    )`;
+
+    execute("role",queryText);
   },
   dropTable:(tableName)=> {
     const queryText = `DROP TABLE IF EXISTS ${tableName}`;

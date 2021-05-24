@@ -4,15 +4,17 @@ import path from 'path';
 import upload from './helpers/upload';
 import AuthC from './controllers/authController';
 import Razorpay from 'razorpay';
+import dotenv from 'dotenv';
+// import superadmin from './routes/mainAdminRoute';
 const passport = require('passport');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken')
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-
+dotenv.config();
 let instance = new Razorpay({
-  key_id: 'rzp_test_ej0GPgDR3FzT7m', // your `KEY_ID`
-  key_secret: 'k1BkS0ulAFGzhnCd1v3a6CvO' // your `KEY_SECRET`
+  key_id: process.env.RAZOR_PAY_KEYID, // your `KEY_ID`
+  key_secret: process.env.RAZOR_PAY_KEYSECRET // your `KEY_SECRET`
 });
 
 export default (orderC, userC, menuC) => {
@@ -27,9 +29,9 @@ export default (orderC, userC, menuC) => {
 
 
   passport.use(new GoogleStrategy({
-    clientID: "1054839305688-3h4bmtp6ol2if85nai1h8mnsnrq15667.apps.googleusercontent.com",
-    clientSecret: "0i07-QJid8GOoo7g5UE82z9n",
-    callbackURL: "https://iskcon-fast-food.herokuapp.com/googleRedirect"
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "http://localhost:9999/googleRedirect"
   },
   function(accessToken, refreshToken, profile, cb) {
       //console.log(accessToken, refreshToken, profile)
@@ -39,17 +41,17 @@ export default (orderC, userC, menuC) => {
 ));
 
 
-passport.use(new FacebookStrategy({
-    clientID: '1099475083838348',//process.env['FACEBOOK_CLIENT_ID'],
-    clientSecret: '35aaa85edf95d246c1f5ee537d5a089e',//process.env['FACEBOOK_CLIENT_SECRET'],
-    callbackURL: "https://iskcon-fast-food.herokuapp.com/facebookRedirect", // relative or absolute path
-    profileFields: ['id', 'displayName', 'email', 'picture']
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    console.log(profile);
-    console.log("FACEBOOK BASED OAUTH VALIDATION GETTING CALLED")
-    return cb(null, profile);
-  }));
+// passport.use(new FacebookStrategy({
+//     clientID: process.env.FACEBOOK_CLIENT_ID,//process.env['FACEBOOK_CLIENT_ID'],
+//     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,//process.env['FACEBOOK_CLIENT_SECRET'],
+//     callbackURL: "http:localhost:9999/facebookRedirect", // relative or absolute path
+//     profileFields: ['id', 'displayName', 'email', 'picture']
+//   },
+//   function(accessToken, refreshToken, profile, cb) {
+//     console.log(profile);
+//     console.log("FACEBOOK BASED OAUTH VALIDATION GETTING CALLED")
+//     return cb(null, profile);
+//   }));
 
 passport.serializeUser(function(user, cb) {
     console.log('serialized user');
@@ -59,6 +61,17 @@ passport.serializeUser(function(user, cb) {
   passport.deserializeUser(function(obj, cb) {
     console.log('deserialized user');
     cb(null, obj);
+});
+
+
+//super admin routes
+server.get(`${prefix}/vendor`,(req,res)=>{
+  resC.read().then((resp)=>{
+    console.log(resp);
+    res.status(200);
+    res.setHeader('Content-Type','application/json');
+    res.json({status:"successful",statuscode:200,message:"retrieved the restaurants"});
+}).catch((err)=>{console.log('failed to read restaurants\n',err)});
 });
 
 
@@ -137,7 +150,7 @@ passport.serializeUser(function(user, cb) {
   // passport oauth routes
 
   server.get('/auth/google',  passport.authenticate('google', { scope: ['profile','email'] }));
-  server.get('/auth/facebook',  passport.authenticate('facebook', {scope:'email'}));
+  // server.get('/auth/facebook',  passport.authenticate('facebook', {scope:'email'}));
 
   server.get('/googleRedirect', passport.authenticate('google'),(req, res)=>{
     console.log('redirected', req.user)
@@ -158,27 +171,27 @@ passport.serializeUser(function(user, cb) {
          res.sendFile(`${uiPath}/templates/userMenu.html`);
     }).catch((err)=>{console.log('failed to create token')});
 });
-server.get('/facebookRedirect', passport.authenticate('facebook', {scope: 'email'}),(req, res)=>{
-    console.log('redirected', req.user)
-    let user = {
-        id:req.user.id,
-        username: req.user.displayName,
-        email: req.user._json.email||(req.user.displayName+"@facebook.com"),
-        provider: req.user.provider };
-    var temp = user.username;
-    temp = temp.substring(0,temp.indexOf(' '));
-    console.log(temp);
-    console.log(user.email);
-    user.username = temp;
-    userC.createOrFind(user).then((info)=>{
-      res.cookie('userid',info.id);
-      res.cookie('name',user.username);
-      res.cookie('email',user.email);
-      res.cookie('username',user.username);
-      res.cookie('jwt',info.token);
-      res.sendFile(`${uiPath}/templates/userMenu.html`);
- }).catch((err)=>{console.log('failed to create token')});
-});
+// server.get('/facebookRedirect', passport.authenticate('facebook', {scope: 'email'}),(req, res)=>{
+//     console.log('redirected', req.user)
+//     let user = {
+//         id:req.user.id,
+//         username: req.user.displayName,
+//         email: req.user._json.email||(req.user.displayName+"@facebook.com"),
+//         provider: req.user.provider };
+//     var temp = user.username;
+//     temp = temp.substring(0,temp.indexOf(' '));
+//     console.log(temp);
+//     console.log(user.email);
+//     user.username = temp;
+//     userC.createOrFind(user).then((info)=>{
+//       res.cookie('userid',info.id);
+//       res.cookie('name',user.username);
+//       res.cookie('email',user.email);
+//       res.cookie('username',user.username);
+//       res.cookie('jwt',info.token);
+//       res.sendFile(`${uiPath}/templates/userMenu.html`);
+//  }).catch((err)=>{console.log('failed to create token')});
+// });
 
 // sign up routes
   server.post(`${prefix}/auth/signup`, (req, res) => userC.create(req)

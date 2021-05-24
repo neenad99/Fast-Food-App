@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const usersStatsErr = document.getElementById('userStatsErr');
   const menuStatsErr = document.getElementById('menuStatsErr');
 
-  const host = 'https://iskcon-fast-food.herokuapp.com/api/v1';
-  // const host='http://localhost:9999/api/v1';
+  // const host = 'https://iskcon-fast-food.herokuapp.com/api/v1';
+  const host='http://localhost:9999/api/v1';
 
 
   let req = new Request(`${host}/orders`, {

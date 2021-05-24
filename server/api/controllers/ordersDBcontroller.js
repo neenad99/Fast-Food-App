@@ -8,7 +8,7 @@ const moment  = require('moment');
 const Mailgen = require('mailgen');
 const OAuth2 = google.auth.OAuth2;
 // import emailService from '../helpers/email';
-// import smsClient from '../helpers/sms';
+import smsClient from '../helpers/sms';
 
 dotenv.config();
 
@@ -134,6 +134,17 @@ export default class OrderDBController {
         items = `<b>${food}</b>`;
       }
       sendMail(email,items,quantity,username,price,status);
+      let body= `Thank you for placing order at our restaurant Please wait while we confirm your order. Please contact us on 08146509343 for any queries`;
+      smsClient.messages
+        .create({
+          body: body.toUpperCase(),
+          from: process.env.PHONE,
+          to: `+91${phone}`,
+        })
+        .then(message => console.log('SMS sent successfully', message.sid))
+        .catch(err => console.log('err in sms delivery:', err))
+        .done();
+
       // const mailOptions = {
       //   from: emailService.credentials.auth.user,
       //   to: email,
@@ -323,16 +334,16 @@ export default class OrderDBController {
       //   }
       // });
 
-      
-      // smsClient.messages
-      //   .create({
-      //     body: body.toUpperCase(),
-      //     from: process.env.PHONE,
-      //     to: `+234${phone.slice(1)}`,
-      //   })
-      //   .then(message => console.log('SMS sent successfully', message.sid))
-      //   .catch(err => console.log('err in sms delivery:', err))
-      //   .done();
+      let body= `Your order status has been updated to ${status}. Please contact us on 08146509343 for any queries`;
+      smsClient.messages
+        .create({
+          body: body.toUpperCase(),
+          from: process.env.PHONE,
+          to: `+91${phone}`,
+        })
+        .then(message => console.log('SMS sent successfully', message.sid))
+        .catch(err => console.log('err in sms delivery:', err))
+        .done();
 
       return {
         status: 'success', statusCode: 200, message: 'Status updated successfully', order: response.rows[0],
